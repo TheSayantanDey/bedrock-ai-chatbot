@@ -1,0 +1,167 @@
+Model-invokation lambda least privilege : 
+```
+{
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "BedrockInvokeModelAccess",
+			"Effect": "Allow",
+			"Action": [
+				"bedrock:InvokeModel"
+			],
+			"Resource": "arn:aws:bedrock:REGION::foundation-model/amazon.nova-micro-v1:0"
+		},
+		{
+			"Sid": "DynamoDBConversationTableAccess",
+			"Effect": "Allow",
+			"Action": [
+				"dynamodb:GetItem",
+				"dynamodb:UpdateItem"
+			],
+			"Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/conversation-table"
+		},
+		{
+			"Sid": "CloudWatchLogsAccess",
+			"Effect": "Allow",
+			"Action": [
+				"logs:CreateLogGroup",
+				"logs:CreateLogStream",
+				"logs:PutLogEvents"
+			],
+			"Resource": "*"
+		}
+	]
+}
+```
+
+Generate-conversation-id least privilege:
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "UserTableUpdateAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/user-table"
+    },
+    {
+      "Sid": "ConversationTableWriteAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem"
+      ],
+      "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/conversation-table"
+    },
+    {
+      "Sid": "CloudWatchLogsAccess",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+Get-Conversation-history lambda least privilege:
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "UserTableReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:GetItem"
+      ],
+      "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/user-table"
+    },
+    {
+      "Sid": "ConversationTableBatchReadAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:BatchGetItem"
+      ],
+      "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/conversation-table"
+    },
+    {
+      "Sid": "CloudWatchLogsAccess",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+Login lambda inline policy least privilege:
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "UserTableScanAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:Scan"
+      ],
+      "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/user-table"
+    },
+    {
+      "Sid": "UserTableUpdateAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:UpdateItem"
+      ],
+      "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/user-table"
+    },
+    {
+      "Sid": "CloudWatchLogsAccess",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+Register lambda least privilege
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "UserTablePutAccess",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem"
+      ],
+      "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/user-table"
+    },
+    {
+      "Sid": "CloudWatchLogsAccess",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
