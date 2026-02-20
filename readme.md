@@ -16,7 +16,7 @@ Designed following the Principle of Least Privilege (PoLP) with tightly scoped I
 ## 🌐 Live Demo
 
 🔗 **URL:**
-[Click Here ](chatbot-red-delta.vercel.app)
+[Click Here ](https://chatbot-red-delta.vercel.app)
 
 ---
 ## 📚 Documentation
