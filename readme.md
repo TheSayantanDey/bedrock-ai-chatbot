@@ -8,15 +8,20 @@
 ![Next.js](https://img.shields.io/badge/Frontend-Next.js-black?logo=next.js)
 
 > A production-style, fully serverless AI chatbot built using AWS services and powered by Amazon Bedrock (Nova Micro model).
-> Supports authentication, multi-session conversations, persistent history, and contextual AI responses.
+Supports authentication, multi-session conversations, persistent history, and contextual AI responses.
+Designed following the Principle of Least Privilege (PoLP) with tightly scoped IAM roles and built in alignment with the AWS Well-Architected Framework to ensure security, reliability, performance efficiency, and cost optimization.
 
 ---
 
 ## 🌐 Live Demo
 
-🔗 **Frontend URL:**
-`[ Add after deployment ]`
+🔗 **URL:**
+[Click Here ](chatbot-red-delta.vercel.app)
 
+---
+## 📚 Documentation
+
+- [Click Here](./setup.md) to see how to setup the full project.
 ---
 
 # 📌 Overview
@@ -54,7 +59,7 @@ When a user sends a message:
 
 ## 📊 High-Level Architecture Diagram
 
-```
+<!-- ```
               ┌─────────────────────┐
               │    Next.js Frontend │
               └───────────┬─────────┘
@@ -67,15 +72,15 @@ When a user sends a message:
                           ▼
                  ┌────────────────┐
                  │ AWS Lambda     │
-                 │ (Business Logic)│
+                 │(Business Logic)│
                  └───────┬────────┘
           ┌──────────────┼──────────────┐
           ▼              ▼              ▼
   DynamoDB        Amazon Bedrock      Auth Logic
 (user-table)       (Nova Micro)     (user-table)
 (conversation-table)
-```
-
+``` -->
+![alt text](image.png)
 ---
 
 # 🧠 AI Layer
@@ -123,7 +128,6 @@ Used for:
 | ------------------- | ------------------------------ |
 | conversationId (PK) | Unique conversation identifier |
 | Messages            | Full chat history (User + AI)  |
-| Metadata            | Timestamps / additional info   |
 
 Used for:
 
@@ -251,7 +255,6 @@ Ensures persistent, contextual dialogue.
 * 📊 Token usage analytics
 * 🛡️ Rate limiting
 * 🚀 CI/CD pipeline
-* 📈 Monitoring with CloudWatch dashboards
 
 ---
 
@@ -269,4 +272,4 @@ Ensures persistent, contextual dialogue.
 # 👨‍💻 Author
 
 **Sayantan Dey**
-AWS Enthusiast | Cloud & AI Builder
+-- AWS Enthusiast | Cloud & AI Builder
