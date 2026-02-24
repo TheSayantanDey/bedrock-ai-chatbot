@@ -59,12 +59,16 @@ def lambda_handler(event, context):
             },
             ConditionExpression="attribute_exists(userId)"
         )
+        # obtain the timestamp
+        from datetime import datetime, timezone
+        ts = datetime.now(timezone.utc).isoformat()
 
         # 2️⃣ Create new conversation record in conversation_data table
         conversation_table.put_item(
             Item={
                 "conversationId": new_conversation_id,
-                "history": []  # start empty
+                "history": [],
+                "lastUpdated": ts
             }
         )
 

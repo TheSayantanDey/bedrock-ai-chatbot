@@ -82,6 +82,10 @@ def lambda_handler(event, context):
     for item in response['Responses'].get(CONVERSATIONS_TABLE, []):
         conv_id = item['conversationId']['S']
         history = item.get('history', [])
+        
+        # ✅ Read top-level lastUpdated timestamp
+        last_updated = item.get('lastUpdated', {}).get('S', '')
+
         # Convert DynamoDB list/map format to normal JSON if needed
         print("history", history)
         # formatted_history = []
@@ -103,15 +107,20 @@ def lambda_handler(event, context):
             if 'M' in h:
                 formatted_history.append({
                     'user': h['M'].get('user', {}).get('S', ''),
-                    'assistant': h['M'].get('assistant', {}).get('S', '')
+                    'assistant': h['M'].get('assistant', {}).get('S', ''), 
                 })
         print("formatted_history", formatted_history)
 
         conversations_data.append({
             "conversationId": conv_id,
+            "lastUpdated": last_updated,   # used for sorting
             "history": formatted_history
         })
     
+    conversations_data.sort(
+        key=lambda c: c.get("lastUpdated", "")
+    )
+
     # 4. Return structured response
     return {
         "statusCode": 200,

@@ -16,7 +16,7 @@ Designed following the Principle of Least Privilege (PoLP) with tightly scoped I
 ## 🌐 Live Demo
 
 🔗 **URL:**
-[Click Here ](chatbot-red-delta.vercel.app)
+[Click Here ](https://chatbot-red-delta.vercel.app)
 
 ---
 ## 📚 Documentation
@@ -128,6 +128,7 @@ Used for:
 | ------------------- | ------------------------------ |
 | conversationId (PK) | Unique conversation identifier |
 | Messages            | Full chat history (User + AI)  |
+| lastUpdated         | Timestamp of the last chat     |
 
 Used for:
 
@@ -167,7 +168,7 @@ Authentication flow:
 * Dedicated Lambda retrieves all conversation IDs
 * Sidebar lists:
 
-  * All previous chats
+  * All previous chats from lastest to oldest in a sorted manner
   * Full conversation history
 * Users can resume any conversation seamlessly
 

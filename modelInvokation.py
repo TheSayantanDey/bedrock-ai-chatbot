@@ -1,6 +1,7 @@
 import boto3
 import json
 
+
 # Clients
 bedrock = boto3.client('bedrock-runtime', region_name='us-east-1')
 dynamodb = boto3.resource('dynamodb')
@@ -91,6 +92,9 @@ def lambda_handler(event, context):
             'statusCode': 500,
             'body': json.dumps({'error': 'Failed to generate response from model'})
         }
+    # obtain the timestamp
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).isoformat()
 
     # 6. Save conversation turn to DynamoDB
     try:
@@ -100,14 +104,16 @@ def lambda_handler(event, context):
                 SET history = list_append(
                     if_not_exists(history, :empty_list),
                     :new_turn
-                )
+                ),
+                lastUpdated = :ts
             """,
             ExpressionAttributeValues={
                 ':empty_list': [],
                 ':new_turn': [{
                     'user': user_message,
                     'assistant': reply
-                }]
+                }],
+                ':ts': ts
             }
         )
     except Exception as e:
