@@ -70,8 +70,7 @@ def lambda_handler(event, context):
 
         # Sort by lastUpdated (newest last)
         conversations_data.sort(
-            key=lambda c: c.get("lastUpdated", ""),
-            reverse = True
+            key=lambda c: c.get("lastUpdated", "")
         )
 
         return {

@@ -1,101 +1,132 @@
-import json
 import boto3
-from botocore.exceptions import ClientError
+import json
 
-dynamodb = boto3.resource("dynamodb")
 
-USERS_TABLE = "user-table"
-CONVERSATIONS_TABLE = "conversation-table"
-
-users_table = dynamodb.Table(USERS_TABLE)
-conversations_table = dynamodb.Table(CONVERSATIONS_TABLE)
-
+# Clients
+bedrock = boto3.client('bedrock-runtime', region_name='us-east-1')
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('conversation-table')
 
 def lambda_handler(event, context):
+
     try:
-        # Handle API Gateway + direct Lambda invoke
-        if "body" in event:
-            body = json.loads(event["body"])
+        if 'body' in event:
+            body = json.loads(event['body'])
         else:
             body = event
+    except (TypeError, json.JSONDecodeError):
+        return {'statusCode': 400, 'body': json.dumps('Invalid JSON')}
 
-        email = body.get("email")
 
-        if not email:
-            return {
-                "statusCode": 400,
-                "body": json.dumps({"error": "email is required"})
-            }
+    user_message = body.get('message', '')
+    #conversation_id = body.get('conversationId', '')  # required
+    conversation_id = body.get('conversationId', '100')  # required
 
-        # 1️⃣ Get user
-        user_response = users_table.get_item(Key={"email": email})
+    # 1. Handle preflight (OPTIONS) request for CORS
+    if event.get('httpMethod') == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': '*',
+                'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+            },
+            'body': json.dumps('Preflight OK')
+        }
+    # Fetch conversation history from DynamoDB
+    # conversation_id = '100'
+    try:
+        db_response = table.get_item(
+            Key={'conversationId': conversation_id}
+        )
+        db_history = db_response.get('Item', {}).get('history', [])
+    except Exception as e:
+        print(f"Error fetching history from DynamoDB: {str(e)}")
+        db_history = []
 
-        user = user_response.get("Item")
+    # 2. Parse incoming JSON safely
+    
+    history = db_history
+    #user_id = body.get('userId')  # optional, not stored unless you want it
 
-        if not user:
-            return {
-                "statusCode": 404,
-                "body": json.dumps({"error": "User not found"})
-            }
+    if not conversation_id:
+        return {
+            'statusCode': 400,
+            'body': json.dumps('conversation_id is required')
+        }
 
-        conversation_ids = user.get("conversationIds", [])
+    # 3. Construct Messages array for Nova
+    messages = []
+    for turn in history:
+        messages.append({"role": "user", "content": [{"text": turn['user']}]})
+        messages.append({"role": "assistant", "content": [{"text": turn['assistant']}]})
 
-        if not conversation_ids:
-            return {
-                "statusCode": 200,
-                "body": json.dumps({
-                    "email": email,
-                    "conversations": []
-                })
-            }
+    messages.append({"role": "user", "content": [{"text": user_message}]})
 
-        # 2️⃣ Fetch conversations (resource auto-deserializes)
-        conversations_data = []
+    # 4. Create payload for Nova Micro
+    request_body = {
+        "messages": messages,
+        "inferenceConfig": {
+            "maxTokens": 300,
+            "temperature": 0.7,
+            "topP": 0.9,
+            "stopSequences": []
+        }
+    }
 
-        for conv_id in conversation_ids:
-            response = conversations_table.get_item(
-                Key={"conversationId": conv_id}
-            )
-
-            conversation = response.get("Item")
-
-            if not conversation:
-                continue
-
-            conversations_data.append({
-                "conversationId": conversation["conversationId"],
-                "lastUpdated": conversation.get("lastUpdated", ""),
-                "history": conversation.get("history", [])
-            })
-
-        # Sort by lastUpdated (newest last)
-        conversations_data.sort(
-            key=lambda c: c.get("lastUpdated", ""),
-            reverse = True
+    # 5. Call Nova Micro model
+    try:
+        response = bedrock.invoke_model(
+            modelId='amazon.nova-micro-v1:0',
+            body=json.dumps(request_body),
+            contentType='application/json',
+            accept='application/json'
         )
 
-        return {
-            "statusCode": 200,
-            "body": json.dumps({
-                "email": email,
-                "conversations": conversations_data
-            }, default=str)
-        }
-
-    except ClientError as e:
-        return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "error": "DynamoDB error",
-                "details": str(e)
-            })
-        }
+        result = json.loads(response['body'].read())
+        reply = result['output']['message']['content'][0]['text']
 
     except Exception as e:
+        print(f"Error calling Bedrock: {str(e)}")
         return {
-            "statusCode": 500,
-            "body": json.dumps({
-                "error": "Internal server error",
-                "details": str(e)
-            })
+            'statusCode': 500,
+            'body': json.dumps({'error': 'Failed to generate response from model'})
         }
+    # obtain the timestamp
+    from datetime import datetime, timezone
+    ts = datetime.now(timezone.utc).isoformat()
+
+    # 6. Save conversation turn to DynamoDB
+    try:
+        table.update_item(
+            Key={'conversationId': conversation_id},
+            UpdateExpression="""
+                SET history = list_append(
+                    if_not_exists(history, :empty_list),
+                    :new_turn
+                ),
+                lastUpdated = :ts
+            """,
+            ExpressionAttributeValues={
+                ':empty_list': [],
+                ':new_turn': [{
+                    'user': user_message,
+                    'assistant': reply
+                }],
+                ':ts': ts
+            }
+        )
+    except Exception as e:
+        print(f"Error saving to DynamoDB: {str(e)}")
+
+    # 7. Return response
+    return {
+        'statusCode': 200,
+        'headers': {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Headers': '*',
+            'Access-Control-Allow-Methods': 'OPTIONS,POST,GET'
+        },
+        'body': json.dumps({'response': reply})
+    }
