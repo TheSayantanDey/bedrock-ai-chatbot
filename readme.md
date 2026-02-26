@@ -59,27 +59,6 @@ When a user sends a message:
 
 ## 📊 High-Level Architecture Diagram
 
-<!-- ```
-              ┌─────────────────────┐
-              │    Next.js Frontend │
-              └───────────┬─────────┘
-                          │
-                          ▼
-                  ┌───────────────┐
-                  │ API Gateway   │
-                  └───────┬───────┘
-                          │
-                          ▼
-                 ┌────────────────┐
-                 │ AWS Lambda     │
-                 │(Business Logic)│
-                 └───────┬────────┘
-          ┌──────────────┼──────────────┐
-          ▼              ▼              ▼
-  DynamoDB        Amazon Bedrock      Auth Logic
-(user-table)       (Nova Micro)     (user-table)
-(conversation-table)
-``` -->
 ![alt text](image.png)
 ---
 
@@ -111,7 +90,7 @@ This enables:
 
 | Attribute       | Purpose                    |
 | --------------- | -------------------------- |
-| userId (PK)     | Unique user identifier     |
+| email           | Unique user identifier     |
 | Credentials     | Login validation           |
 | conversationIds | List of user conversations |
 

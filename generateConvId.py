@@ -2,10 +2,12 @@ import json
 import uuid
 import boto3
 from botocore.exceptions import ClientError
+from datetime import datetime, timezone
 
 dynamodb = boto3.resource("dynamodb")
 user_table = dynamodb.Table("user-table")
-conversation_table = dynamodb.Table("conversation-table")  # New table
+conversation_table = dynamodb.Table("conversation-table")
+
 
 def lambda_handler(event, context):
     try:
@@ -15,19 +17,19 @@ def lambda_handler(event, context):
         else:
             body = event
 
-        user_id = body.get("userId")
+        email = body.get("email")
         conversation_id = body.get("conversationId")
 
-        if not user_id:
+        if not email:
             return {
                 "statusCode": 400,
                 "body": json.dumps({
-                    "message": "userId is required"
+                    "message": "email is required"
                 })
             }
 
         # --------------------------------------------------
-        # CASE 1: Existing conversation (skip DB update)
+        # CASE 1: Existing conversation
         # --------------------------------------------------
         if conversation_id:
             return {
@@ -44,9 +46,9 @@ def lambda_handler(event, context):
         # --------------------------------------------------
         new_conversation_id = str(uuid.uuid4())
 
-        # 1️⃣ Append conversationId to user's conversationIds
+        # 1️⃣ Append conversationId to user's conversationIds list
         user_table.update_item(
-            Key={"userId": user_id},
+            Key={"email": email},
             UpdateExpression="""
                 SET conversationIds = list_append(
                     if_not_exists(conversationIds, :empty),
@@ -57,16 +59,16 @@ def lambda_handler(event, context):
                 ":new_conv": [new_conversation_id],
                 ":empty": []
             },
-            ConditionExpression="attribute_exists(userId)"
+            ConditionExpression="attribute_exists(email)"
         )
-        # obtain the timestamp
-        from datetime import datetime, timezone
+
+        # 2️⃣ Create new conversation record
         ts = datetime.now(timezone.utc).isoformat()
 
-        # 2️⃣ Create new conversation record in conversation_data table
         conversation_table.put_item(
             Item={
                 "conversationId": new_conversation_id,
+                #"email": email,  # Optional but recommended for ownership tracking
                 "history": [],
                 "lastUpdated": ts
             }
@@ -82,7 +84,6 @@ def lambda_handler(event, context):
         }
 
     except ClientError as e:
-        # User not found
         if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
             return {
                 "statusCode": 404,

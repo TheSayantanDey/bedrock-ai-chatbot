@@ -3,20 +3,13 @@ import uuid
 import time
 import boto3
 import hashlib
-import os
 from botocore.exceptions import ClientError
-from boto3.dynamodb.conditions import Attr
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table("user-table")
 
-SECRET_KEY = "sayantan-1q2w3e4r"
-
 
 def verify_password(stored_password: str, provided_password: str) -> bool:
-    """
-    stored_password format: salt:hash
-    """
     salt_hex, hash_hex = stored_password.split(":")
     salt = bytes.fromhex(salt_hex)
 
@@ -32,7 +25,6 @@ def verify_password(stored_password: str, provided_password: str) -> bool:
 
 def lambda_handler(event, context):
     try:
-        # Handle API Gateway & Lambda test events
         if "body" in event:
             body = json.loads(event["body"])
         else:
@@ -49,20 +41,20 @@ def lambda_handler(event, context):
                 })
             }
 
-        # 🔍 Find user by email (SCAN)
-        response = table.scan(
-            FilterExpression=Attr("email").eq(email)
+        # ✅ Get user by email (NO SCAN)
+        response = table.get_item(
+            Key={"email": email}
         )
 
-        if not response["Items"]:
+        user = response.get("Item")
+
+        if not user:
             return {
                 "statusCode": 401,
                 "body": json.dumps({
                     "message": "Invalid email or password"
                 })
             }
-
-        user = response["Items"][0]
 
         # 🔐 Verify password
         if not verify_password(user["password"], password):
@@ -77,9 +69,9 @@ def lambda_handler(event, context):
         new_token = str(uuid.uuid4())
         new_expiry = int(time.time()) + (24 * 60 * 60)
 
-        # 📝 Update token in DynamoDB
+        # 📝 Update token
         table.update_item(
-            Key={"userId": user["userId"]},
+            Key={"email": email},
             UpdateExpression="SET #t = :t, tokenExpiresAt = :e",
             ExpressionAttributeNames={
                 "#t": "token"
@@ -90,18 +82,17 @@ def lambda_handler(event, context):
             }
         )
 
-        # Prepare response (remove password)
-        user_response = user.copy()
-        user_response.pop("password")
-        user_response["token"] = new_token
-        user_response["tokenExpiresAt"] = new_expiry
+        # Remove password before response
+        user.pop("password", None)
+        user["token"] = new_token
+        user["tokenExpiresAt"] = new_expiry
 
         return {
             "statusCode": 200,
             "body": json.dumps({
                 "message": "Login successful",
-                "user": user_response
-            })
+                "user": user
+            }, default=str)
         }
 
     except ClientError as e:

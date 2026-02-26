@@ -27,7 +27,7 @@ Create the required DynamoDB tables:
 3. Configure:
 
    * **Table name:** `user-table`
-   * **Partition key:** `userId`
+   * **Partition key:** `email`
 4. Click **Create**
 
 ---
@@ -48,13 +48,13 @@ For each function:
 * Paste the respective code file
 * Click **Deploy**
 * Go to **Configuration → Permissions**
-* Add **least-privilege inline policy** (Refer to `inline-policies.txt`)
+* Add **least-privilege inline policy** (Refer to `inline-policies.md`)
 
 ---
 
-### 🔹 1. ModelInvokation
+### 🔹 1. ModelInvocation
 
-* Code file: `modelInvokation.py`
+* Code file: `modelInvocation.py`
 
 ### 🔹 2. generate-conversation-id
 
@@ -112,7 +112,7 @@ You need to create **two REST APIs**:
 
   * Method: `POST`
   * Integration type: `Lambda Function`
-  * Select `ModelInvokation`
+  * Select `ModelInvocation`
 
 ---
 
