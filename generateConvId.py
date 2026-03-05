@@ -53,13 +53,16 @@ def lambda_handler(event, context):
                 SET conversationIds = list_append(
                     if_not_exists(conversationIds, :empty),
                     :new_conv
-                )
+                ),
+                remainingConversationTokens = remainingConversationTokens - :dec
             """,
             ExpressionAttributeValues={
                 ":new_conv": [new_conversation_id],
-                ":empty": []
+                ":empty": [],
+                ":dec": 1,
+                ":zero": 0
             },
-            ConditionExpression="attribute_exists(email)"
+            ConditionExpression="attribute_exists(email) AND remainingConversationTokens > :zero"
         )
 
         # 2️⃣ Create new conversation record
@@ -86,9 +89,9 @@ def lambda_handler(event, context):
     except ClientError as e:
         if e.response["Error"]["Code"] == "ConditionalCheckFailedException":
             return {
-                "statusCode": 404,
+                "statusCode": 403,
                 "body": json.dumps({
-                    "message": "User not found"
+                    "message": "No remaining conversation tokens"
                 })
             }
 

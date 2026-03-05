@@ -93,12 +93,13 @@ This enables:
 | email           | Unique user identifier     |
 | Credentials     | Login validation           |
 | conversationIds | List of user conversations |
+|conversationTokens| Limited number of conversations per user    |
 
 Used for:
 
 * Authentication
 * Tracking multiple chat sessions per user
-
+* Limiting number of conversations per user
 ---
 
 ## 💬 `conversation-table`
@@ -233,7 +234,6 @@ Ensures persistent, contextual dialogue.
 * 🧠 Conversation summarization
 * ⚡ Streaming responses from Bedrock
 * 📊 Token usage analytics
-* 🛡️ Rate limiting
 * 🚀 CI/CD pipeline
 
 ---
@@ -252,4 +252,4 @@ Ensures persistent, contextual dialogue.
 # 👨‍💻 Author
 
 **Sayantan Dey**
--- AWS Enthusiast | Cloud & AI Builder
+-- Engineer | Cloud & Infra
