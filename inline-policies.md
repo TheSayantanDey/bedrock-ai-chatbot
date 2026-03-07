@@ -184,29 +184,42 @@ Validates user credentials and updates login metadata.
 
 **Purpose:**
 Creates a new user in DynamoDB.
-
+Keeps track of the total users
 ```json
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "UserTablePutAccess",
-      "Effect": "Allow",
-      "Action": [
-        "dynamodb:PutItem"
-      ],
-      "Resource": "arn:aws:dynamodb:REGION:ACCOUNT_ID:table/user-table"
-    },
-    {
-      "Sid": "CloudWatchLogsAccess",
-      "Effect": "Allow",
-      "Action": [
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": "*"
-    }
-  ]
+	"Version": "2012-10-17",
+	"Statement": [
+		{
+			"Sid": "UserTableAccess",
+			"Effect": "Allow",
+			"Action": [
+				"dynamodb:PutItem",
+				"dynamodb:UpdateItem",
+				"dynamodb:GetItem",
+				"dynamodb:DeleteItem"
+			],
+			"Resource": "arn:aws:dynamodb:us-east-1:771992991399:table/user-table"
+		},
+		{
+			"Sid": "MetadataTableAccess",
+			"Effect": "Allow",
+			"Action": [
+				"dynamodb:UpdateItem",
+				"dynamodb:GetItem"
+			],
+			"Resource": "arn:aws:dynamodb:us-east-1:771992991399:table/app-metadata"
+		},
+		{
+			"Sid": "CloudWatchLogsAccess",
+			"Effect": "Allow",
+			"Action": [
+				"logs:CreateLogGroup",
+				"logs:CreateLogStream",
+				"logs:PutLogEvents"
+			],
+			"Resource": "*"
+		}
+	]
 }
 ```
 

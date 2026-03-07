@@ -56,7 +56,12 @@ def lambda_handler(event, context):
         }
 
     # 3. Construct Messages array for Nova
-    messages = []
+    messages = [
+        {
+            "role": "user",
+            "content": [{"text": "You are a helpful AI assistant. Respond clearly and concisely. Prefer answers under 10 sentences unless necessary."}]
+        }
+    ]
     for turn in history:
         messages.append({"role": "user", "content": [{"text": turn['user']}]})
         messages.append({"role": "assistant", "content": [{"text": turn['assistant']}]})
@@ -67,7 +72,7 @@ def lambda_handler(event, context):
     request_body = {
         "messages": messages,
         "inferenceConfig": {
-            "maxTokens": 300,
+            "maxTokens": 250,
             "temperature": 0.7,
             "topP": 0.9,
             "stopSequences": []

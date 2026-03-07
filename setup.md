@@ -19,7 +19,6 @@ Create the required DynamoDB tables:
 4. Click **Create**
 
 ---
-
 ### 📌 Create `user-table`
 
 1. Go to **AWS Console → DynamoDB → Tables**
@@ -29,6 +28,19 @@ Create the required DynamoDB tables:
    * **Table name:** `user-table`
    * **Partition key:** `email`
 4. Click **Create**
+
+---
+### 📌 Create `app-metadata`
+
+1. Go to **AWS Console → DynamoDB → Tables**
+2. Click **Create table**
+3. Configure:
+
+   * **Table name:** `app-metadata`
+   * **Partition key:** `key`
+4. Click **Create**
+5. Add an entry → `key`: total-users & `value`: 0
+
 
 ---
 
@@ -71,7 +83,9 @@ For each function:
 ### 🔹 5. register
 
 * Code file: `register.py`
-
+- For register only, create an empty folder locally, run the command `pip install requests -t .` 
+- Create a file `lambda_function.py` and put the code there. 
+- Compress the file into a `.zip` and then upload the compressed file in code section. 
 ---
 
 # 3️⃣ API Gateway Setup

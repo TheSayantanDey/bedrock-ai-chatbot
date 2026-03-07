@@ -41,7 +41,7 @@ def lambda_handler(event, context):
                 })
             }
 
-        # ✅ Get user by email (NO SCAN)
+        # ✅ Get user by email
         response = table.get_item(
             Key={"email": email}
         )
@@ -53,6 +53,15 @@ def lambda_handler(event, context):
                 "statusCode": 401,
                 "body": json.dumps({
                     "message": "Invalid email or password"
+                })
+            }
+
+        # 🚨 NEW: Check email verification
+        if not user.get("emailVerified", False):
+            return {
+                "statusCode": 403,
+                "body": json.dumps({
+                    "message": "Email not verified. Please verify your email before logging in."
                 })
             }
 

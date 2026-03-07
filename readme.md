@@ -12,16 +12,15 @@ Supports authentication, multi-session conversations, persistent history, and co
 Designed following the Principle of Least Privilege (PoLP) with tightly scoped IAM roles and built in alignment with the AWS Well-Architected Framework to ensure security, reliability, performance efficiency, and cost optimization.
 
 ---
+# 🎥 Demo
 
+![Demo](screenshots/demo.gif)
+---
 ## 🌐 Live Demo
 
 🔗 **URL:**
 [Click Here ](https://chatbot-red-delta.vercel.app)
 
----
-## 📚 Documentation
-
-- [Click Here](./setup.md) to see how to setup the full project.
 ---
 
 # 📌 Overview
@@ -117,7 +116,18 @@ Used for:
 * Continuing previous sessions
 
 ---
+## 💬 `app-metadata`
 
+| Attribute           | Purpose                        |
+| ------------------- | ------------------------------ |
+| Key: total-users (PK) | Keep track of the load |
+
+Used for:
+
+* Keeping track of the total user
+* Limiting to certain number of user preventing cyber threats
+
+---
 # 🔐 Authentication System
 
 ### Lambda Functions:
@@ -230,12 +240,11 @@ Ensures persistent, contextual dialogue.
 
 # 🔮 Future Enhancements
 
-* 🔐 JWT-based authentication
 * 🧠 Conversation summarization
-* ⚡ Streaming responses from Bedrock
+* ⚡ Multi-model integration
 * 📊 Token usage analytics
 * 🚀 CI/CD pipeline
-
+* 🔐 JWT-based authentication
 ---
 
 # 🏆 Key Learning Outcomes
@@ -247,6 +256,10 @@ Ensures persistent, contextual dialogue.
 * IAM least-privilege policy design
 * Full-stack cloud integration
 
+---
+## 📚 Documentation
+
+- [Click Here](./setup.md) to see how to setup the full project.
 ---
 
 # 👨‍💻 Author
